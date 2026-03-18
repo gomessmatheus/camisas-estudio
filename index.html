@@ -38,7 +38,7 @@ body{min-height:100vh;}
 .brand-sub{font-size:12px;color:var(--text-dim);font-family:var(--mono);margin-top:2px;}
 .header-actions{display:flex;gap:8px;}
 
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.75rem;}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:1.75rem;}
 .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.9rem 1rem;}
 .stat-label{font-size:11px;color:var(--text-dim);font-family:var(--mono);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;}
 .stat-num{font-size:24px;font-weight:300;letter-spacing:-.03em;}
@@ -124,6 +124,23 @@ select.flt{padding:8px 12px;background:var(--surface);border:1px solid var(--bor
 .res-list .ri{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text-muted);}
 .res-list .ri:last-child{border-bottom:none;}
 
+.view-toggle{display:flex;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;}
+.view-btn{padding:6px 10px;background:transparent;border:none;cursor:pointer;color:var(--text-dim);display:flex;align-items:center;transition:all .15s;}
+.view-btn:hover{color:var(--text);background:var(--surface2);}
+.view-btn.active{background:var(--surface2);color:var(--text);}
+
+.list-table{width:100%;border-collapse:collapse;}
+.list-table th{font-size:11px;color:var(--text-dim);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);font-weight:400;}
+.list-table td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text-muted);vertical-align:middle;}
+.list-table tr:last-child td{border-bottom:none;}
+.list-table tr{cursor:pointer;transition:background .1s;}
+.list-table tr:hover td{background:var(--surface2);}
+.list-thumb{width:36px;height:36px;object-fit:cover;border-radius:6px;display:block;}
+.list-thumb-ph{width:36px;height:36px;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:16px;}
+.list-team{font-size:14px;font-weight:500;color:var(--text);}
+.list-group-row td{padding:14px 12px 6px;font-size:13px;font-weight:500;color:var(--text);background:transparent;border-bottom:none;border-top:1px solid var(--border);}
+.list-group-row:first-child td{border-top:none;}
+
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
 @media(max-width:480px){
   .stats{grid-template-columns:repeat(2,1fr);}
@@ -146,20 +163,25 @@ select.flt{padding:8px 12px;background:var(--surface);border:1px solid var(--bor
       <div class="brand-sub" id="brandSub">estúdio</div>
     </div>
     <div class="header-actions">
+      <div class="view-toggle">
+        <button class="view-btn active" id="btnGrid" onclick="setView('grid')" title="Grade">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="0" y="0" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y="0" width="6" height="6" rx="1" fill="currentColor"/><rect x="0" y="8" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y="8" width="6" height="6" rx="1" fill="currentColor"/></svg>
+        </button>
+        <button class="view-btn" id="btnList" onclick="setView('list')" title="Lista">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="0" y="1" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="6" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="11" width="14" height="2" rx="1" fill="currentColor"/></svg>
+        </button>
+      </div>
       <button class="btn btn-sm" onclick="openPeople()">Origens</button>
       <button class="btn btn-sm" onclick="openLocais()">Locais</button>
       <button class="btn btn-accent" onclick="openAdd()">+ Adicionar</button>
     </div>
   </div>
   <div class="stats" id="stats"></div>
-  <div class="owner-bar" id="ownerBar"></div>
+  <div class="owner-bar" id="ligaBar"></div>
   <div class="controls">
-    <input class="search" id="search" type="text" placeholder="Buscar time, liga..." oninput="render()">
+    <input class="search" id="search" type="text" placeholder="Buscar time..." oninput="render()">
     <select class="flt" id="filterLoc" onchange="render()">
       <option value="">Todos os locais</option>
-    </select>
-    <select class="flt" id="filterLiga" onchange="render()">
-      <option value="">Todas as ligas</option>
     </select>
   </div>
   <div id="content"></div>
@@ -210,35 +232,35 @@ async function loadAll(){
   render();
 }
 
-function renderOwnerBar(){
-  document.getElementById('ownerBar').innerHTML=
-    `<button class="pill${activeOwner===''?' active':''}" onclick="setOwner('')">Todos</button>`+
-    owners.map(o=>{
-      const c=shirts.filter(s=>s.owner_id===o.id).length;
-      return`<button class="pill${activeOwner===o.id?' active':''}" onclick="setOwner('${o.id}')">
-        <span class="pill-dot" style="background:${o.color}"></span>${o.name}
-        <span class="pill-count">${c}</span>
+let activeLiga='';
+
+function renderLigaBar(){
+  const ligas=[...new Set(shirts.map(s=>s.liga))].sort();
+  document.getElementById('ligaBar').innerHTML=
+    `<button class="pill${activeLiga===''?' active':''}" onclick="setLiga('')">Todas</button>`+
+    ligas.map(l=>{
+      const cnt=shirts.filter(s=>s.liga===l).length;
+      return`<button class="pill${activeLiga===l?' active':''}" onclick="setLiga('${l}')">
+        ${l}<span class="pill-count">${cnt}</span>
       </button>`;
     }).join('');
 }
 
-function setOwner(id){activeOwner=id;render();}
+function setLiga(l){activeLiga=l;render();}
 
 function getFiltered(){
   const q=document.getElementById('search').value.toLowerCase();
   const loc=document.getElementById('filterLoc').value;
-  const liga=document.getElementById('filterLiga').value;
   return shirts.filter(s=>{
-    if(activeOwner&&s.owner_id!==activeOwner)return false;
+    if(activeLiga&&s.liga!==activeLiga)return false;
     if(q&&!s.time.toLowerCase().includes(q)&&!s.liga.toLowerCase().includes(q))return false;
     if(loc&&s.loc!==loc)return false;
-    if(liga&&s.liga!==liga)return false;
     return true;
   });
 }
 
 function renderStats(){
-  const src=activeOwner?shirts.filter(s=>s.owner_id===activeOwner):shirts;
+  const src=activeLiga?shirts.filter(s=>s.liga===activeLiga):shirts;
   document.getElementById('stats').innerHTML=locations.map(l=>
     `<div class="stat"><div class="stat-label">${l.name}</div>
      <div class="stat-num">${src.filter(s=>s.loc===l.id).length} <span>camisas</span></div></div>`
@@ -246,32 +268,78 @@ function renderStats(){
 }
 
 function updateFilters(){
-  const ligas=[...new Set(shirts.map(s=>s.liga))].sort();
-  const sel=document.getElementById('filterLiga'),cur=sel.value;
-  sel.innerHTML='<option value="">Todas as ligas</option>'+
-    ligas.map(l=>`<option value="${l}"${l===cur?' selected':''}>${l}</option>`).join('');
   const locSel=document.getElementById('filterLoc'),curLoc=locSel.value;
   locSel.innerHTML='<option value="">Todos os locais</option>'+
     locations.map(l=>`<option value="${l.id}"${l.id===curLoc?' selected':''}>${l.name}</option>`).join('');
 }
 
+let viewMode='grid';
+
+function setView(v){
+  viewMode=v;
+  document.getElementById('btnGrid').classList.toggle('active',v==='grid');
+  document.getElementById('btnList').classList.toggle('active',v==='list');
+  render();
+}
+
 function render(){
-  renderOwnerBar();renderStats();updateFilters();
+  renderLigaBar();renderStats();updateFilters();
   const filtered=getFiltered();
   document.getElementById('brandSub').textContent=`${filtered.length} camisa${filtered.length!==1?'s':''}`;
   const groups={};
   filtered.forEach(s=>{if(!groups[s.time])groups[s.time]=[];groups[s.time].push(s);});
   const teams=Object.keys(groups).sort();
   if(!teams.length){document.getElementById('content').innerHTML='<div class="empty">Nenhuma camisa encontrada.</div>';return;}
+
+  if(viewMode==='list'){
+    const empLoc=locations.find(l=>l.is_loan);
+    const rows=teams.map((team,i)=>{
+      const list=groups[team];
+      const dataRows=list.map(s=>{
+        const o=ownerById(s.owner_id);
+        const res=resByShirt(s.id);
+        const lr=res.length?res[res.length-1]:null;
+        const thumb=s.foto
+          ?`<img class="list-thumb" src="${s.foto}" alt="${s.time}">`
+          :`<div class="list-thumb-ph">👕</div>`;
+        const status=empLoc&&s.loc===empLoc.id
+          ?`<span style="color:#e87a55">emprestada</span>`
+          :lr?`<span style="color:#d4537e">reservada · ${lr.nome}</span>`
+          :`<button class="res-btn" onclick="event.stopPropagation();openReserva(${s.id})">reservar</button>`;
+        return`<tr onclick="openDetail(${s.id})">
+          <td>${thumb}</td>
+          <td><div class="list-team">${s.time}</div><div style="font-size:11px;color:var(--text-dim);font-family:var(--mono)">${s.liga}</div></td>
+          <td><span style="color:var(--text-dim);font-family:var(--mono);font-size:11px">#${s.codigo||'—'}</span></td>
+          <td>${s.ano}</td>
+          <td style="color:var(--text-muted)">${s.tipo||'—'}</td>
+          <td><div class="loc-badge" style="${locStyle(s.loc)}">${locLabel(s.loc)}</div></td>
+          <td><div class="owner-ind"><span class="odot" style="background:${o.color}"></span>${o.name}</div></td>
+          <td>${status}</td>
+        </tr>`;
+      }).join('');
+      return`<tr class="list-group-row"><td colspan="7">${team} <span style="font-size:11px;color:var(--text-dim);font-weight:400">${list.length}</span></td></tr>${dataRows}`;
+    }).join('');
+    document.getElementById('content').innerHTML=`
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+        <table class="list-table">
+          <thead><tr>
+            <th></th><th>Time</th><th>#</th><th>Tipo</th><th>Ano</th><th>Local</th><th>Origem</th><th></th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+    return;
+  }
+
   document.getElementById('content').innerHTML=teams.map((team,i)=>{
     const list=groups[team];
+    const empLoc=locations.find(l=>l.is_loan);
     const cards=list.map(s=>{
       const o=ownerById(s.owner_id);
       const res=resByShirt(s.id);
       const lr=res.length?res[res.length-1]:null;
       const img=s.foto?`<img class="card-img" src="${s.foto}" alt="${s.time}">`:`<div class="card-ph">👕</div>`;
       const rb=lr?`<div class="card-res">⏺ ${lr.nome} · ${fmt(lr.data)}</div>`:'';
-      const empLoc=locations.find(l=>l.is_loan);
       const ab=empLoc&&s.loc===empLoc.id
         ?`<button class="res-btn taken">emprestada</button>`
         :lr?`<button class="res-btn taken">reservada</button>`
@@ -283,8 +351,8 @@ function render(){
             <div class="loc-badge" style="${locStyle(s.loc)}">${locLabel(s.loc)}</div>
             <div class="owner-ind"><span class="odot" style="background:${o.color}"></span>${o.name}</div>
           </div>
-          <div class="card-num">Nº ${s.num} · ${s.ano}</div>
-          <div class="card-meta">${s.liga}</div>
+          <div class="card-num">#${s.codigo||'—'} · ${s.ano}</div>
+          <div class="card-meta">${s.liga}${s.tipo?' · '+s.tipo:''}</div>
           ${rb}<div class="card-ar">${ab}</div>
         </div>
       </div>`;
@@ -306,7 +374,7 @@ function openDetail(id){
     :`<div style="font-size:13px;color:var(--text-dim)">Sem reservas</div>`;
   const oo=owners.map(o=>`<option value="${o.id}"${o.id===s.owner_id?' selected':''}>${o.name}</option>`).join('');
   showModal(`<div class="modal">
-    <div class="modal-title">${s.time} · Nº ${s.num}</div>
+    <div class="modal-title">${s.time} <span style="color:var(--text-dim);font-size:13px;font-family:var(--mono)">#${s.codigo||'—'}</span></div>
     <div style="cursor:pointer;margin-bottom:1rem" onclick="triggerPhoto('detail',${id})">${img}</div>
     <div class="fg"><label class="fl">Local</label>
       <select class="fi" id="dLoc">${locations.map(l=>`<option value="${l.id}"${l.id===s.loc?' selected':''}>${l.name}</option>`).join('')}</select>
@@ -327,7 +395,7 @@ function openDetail(id){
 async function saveDetail(id){
   const btn=document.getElementById('sdBtn');
   btn.disabled=true;btn.textContent='salvando...';
-  const{error}=await sb.from('shirts').update({loc:document.getElementById('dLoc').value,owner_id:document.getElementById('dOwner').value}).eq('id',id);
+  const{error}=await sb.from('shirts').update({loc:document.getElementById('dLoc').value,owner_id:document.getElementById('dOwner').value,tipo:document.getElementById('dTipo').value||null}).eq('id',id);
   if(error){toast('Erro ao salvar',true);btn.disabled=false;btn.textContent='salvar';return;}
   await loadAll();closeModal();toast('Salvo!');
 }
@@ -346,7 +414,7 @@ async function removeRes(resId,shirtId){
 function openReserva(id){
   const s=shirts.find(x=>x.id===id);
   showModal(`<div class="modal">
-    <div class="modal-title">Reservar · ${s.time} Nº ${s.num}</div>
+    <div class="modal-title">Reservar · ${s.time} <span style="color:var(--text-dim);font-size:13px;font-family:var(--mono)">#${s.codigo||'—'}</span></div>
     <div class="fg"><label class="fl">Seu nome</label><input class="fi" type="text" id="rNome" placeholder="Ex: João"></div>
     <div class="fg"><label class="fl">Data de uso</label><input class="fi" type="date" id="rData"></div>
     <div class="modal-actions">
@@ -379,7 +447,15 @@ function openAdd(){
     <div class="fg"><label class="fl">Origem</label><select class="fi" id="aOwner">${oo}</select></div>
     <div class="fg"><label class="fl">Time</label><input class="fi" type="text" id="aTime" placeholder="Ex: Flamengo"></div>
     <div class="fg"><label class="fl">Liga</label><input class="fi" type="text" id="aLiga" placeholder="Ex: Brasileirão"></div>
-    <div class="fg"><label class="fl">Número</label><input class="fi" type="text" id="aNum" placeholder="Ex: 10"></div>
+    <div class="fg"><label class="fl">Tipo</label>
+      <select class="fi" id="aTipo">
+        <option value="">—</option>
+        <option value="I">I</option>
+        <option value="II">II</option>
+        <option value="III">III</option>
+        <option value="Treino">Treino</option>
+      </select>
+    </div>
     <div class="fg"><label class="fl">Temporada</label><input class="fi" type="text" id="aAno" placeholder="Ex: 2024"></div>
     <div class="fg"><label class="fl">Local</label>
       <select class="fi" id="aLoc">
@@ -398,9 +474,11 @@ async function confirmAdd(){
   const liga=document.getElementById('aLiga').value.trim();
   if(!time||!liga){toast('Preencha time e liga',true);return;}
   const btn=document.getElementById('caBtn');btn.disabled=true;btn.textContent='salvando...';
+  const nextCodigo=(shirts.length>0?Math.max(...shirts.map(s=>parseInt(s.codigo)||0)):0)+1;
   const{error}=await sb.from('shirts').insert({
     time,liga,
-    num:document.getElementById('aNum').value.trim()||'?',
+    codigo:nextCodigo,
+    tipo:document.getElementById('aTipo').value||null,
     ano:document.getElementById('aAno').value.trim()||'?',
     loc:document.getElementById('aLoc').value,
     owner_id:document.getElementById('aOwner').value,
