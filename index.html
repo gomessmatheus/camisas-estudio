@@ -8,55 +8,47 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root {
-  --bg:#0f0f0f; --surface:#181818; --surface2:#222;
-  --border:rgba(255,255,255,0.08); --border-hover:rgba(255,255,255,0.18);
-  --text:#f0f0f0; --text-muted:#888; --text-dim:#555;
-  --accent:#e8ff47; --accent-dim:rgba(232,255,71,0.12);
-  --radius:12px; --radius-sm:8px;
-  --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
+:root{
+  --bg:#0f0f0f;--surface:#181818;--surface2:#222;
+  --border:rgba(255,255,255,0.08);--border-hover:rgba(255,255,255,0.18);
+  --text:#f0f0f0;--text-muted:#888;--text-dim:#555;
+  --accent:#e8ff47;--accent-dim:rgba(232,255,71,0.12);
+  --radius:12px;--radius-sm:8px;
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.5;}
 body{min-height:100vh;}
 ::-webkit-scrollbar{width:4px;}
 ::-webkit-scrollbar-thumb{background:var(--border-hover);border-radius:2px;}
-
 .app{max-width:900px;margin:0 auto;padding:2rem 1.25rem 4rem;}
-
-.loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:999;}
-.spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
-.loading-text{font-size:13px;color:var(--text-dim);font-family:var(--mono);}
+.ls{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:999;}
+.spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+.ls-txt{font-size:13px;color:var(--text-dim);font-family:var(--mono);}
 @keyframes spin{to{transform:rotate(360deg);}}
-
-.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(10px);background:var(--surface);border:1px solid var(--border-hover);border-radius:var(--radius-sm);padding:10px 18px;font-size:13px;color:var(--text-muted);opacity:0;transition:all 0.2s;z-index:999;white-space:nowrap;pointer-events:none;}
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(10px);background:var(--surface);border:1px solid var(--border-hover);border-radius:var(--radius-sm);padding:10px 18px;font-size:13px;color:var(--text-muted);opacity:0;transition:all .2s;z-index:1000;white-space:nowrap;pointer-events:none;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-.toast.err{border-color:rgba(226,75,74,0.5);color:#e24b4a;}
-
+.toast.err{border-color:rgba(226,75,74,.5);color:#e24b4a;}
+.admin-badge{display:inline-flex;align-items:center;gap:4px;background:var(--accent-dim);border:1px solid rgba(232,255,71,.4);border-radius:20px;padding:2px 8px;font-size:10px;color:var(--accent);font-family:var(--mono);cursor:pointer;}
 .header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2rem;gap:1rem;}
-.brand-title{font-size:22px;font-weight:500;letter-spacing:-0.02em;}
-.brand-sub{font-size:12px;color:var(--text-dim);font-family:var(--mono);margin-top:2px;}
-.header-actions{display:flex;gap:8px;}
-
+.brand-title{font-size:22px;font-weight:500;letter-spacing:-.02em;cursor:default;user-select:none;}
+.brand-sub{font-size:12px;color:var(--text-dim);font-family:var(--mono);margin-top:2px;display:flex;align-items:center;gap:6px;}
+.header-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
 .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:1.75rem;}
 .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.9rem 1rem;}
 .stat-label{font-size:11px;color:var(--text-dim);font-family:var(--mono);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;}
 .stat-num{font-size:24px;font-weight:300;letter-spacing:-.03em;}
 .stat-num span{font-size:11px;color:var(--text-dim);font-family:var(--mono);}
-
-.owner-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;}
+.liga-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;}
 .pill{display:inline-flex;align-items:center;gap:6px;padding:5px 13px;border:1px solid var(--border);border-radius:20px;font-size:13px;cursor:pointer;background:transparent;color:var(--text-muted);transition:all .15s;font-family:var(--font);}
 .pill:hover{border-color:var(--border-hover);color:var(--text);}
 .pill.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
-.pill-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 .pill-count{font-size:11px;opacity:.6;font-family:var(--mono);}
-
 .controls{display:flex;gap:8px;margin-bottom:1.75rem;flex-wrap:wrap;}
 .search{flex:1;min-width:160px;padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:14px;font-family:var(--font);outline:none;transition:border-color .15s;}
 .search:focus{border-color:var(--border-hover);}
 .search::placeholder{color:var(--text-dim);}
 select.flt{padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px;font-family:var(--font);cursor:pointer;outline:none;}
-
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;color:var(--text-muted);font-size:13px;cursor:pointer;font-family:var(--font);transition:all .15s;white-space:nowrap;}
 .btn:hover{border-color:var(--border-hover);color:var(--text);}
 .btn:disabled{opacity:.4;cursor:default;}
@@ -65,51 +57,67 @@ select.flt{padding:8px 12px;background:var(--surface);border:1px solid var(--bor
 .btn-sm{padding:5px 11px;font-size:12px;}
 .btn-danger{border-color:rgba(226,75,74,.4);color:#e24b4a;}
 .btn-danger:hover{background:rgba(226,75,74,.1);}
-
+.view-toggle{display:flex;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;}
+.view-btn{padding:6px 10px;background:transparent;border:none;cursor:pointer;color:var(--text-dim);display:flex;align-items:center;transition:all .15s;}
+.view-btn:hover{color:var(--text);background:var(--surface2);}
+.view-btn.active{background:var(--surface2);color:var(--text);}
 .team-group{margin-bottom:2.5rem;animation:fadeUp .3s ease both;}
 .team-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem;}
 .team-label{font-size:17px;font-weight:500;letter-spacing:-.01em;}
 .team-count{font-size:11px;color:var(--text-dim);font-family:var(--mono);background:var(--surface);border:1px solid var(--border);padding:2px 8px;border-radius:20px;}
 .shirt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:10px;}
-
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:border-color .15s,transform .1s;}
 .card:hover{border-color:var(--border-hover);transform:translateY(-1px);}
-.card-img{width:100%;height:130px;object-fit:cover;display:block;}
-.card-ph{width:100%;height:130px;display:flex;align-items:center;justify-content:center;background:var(--surface2);font-size:32px;}
-.card-body{padding:.7rem .8rem;}
-.card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.card-img{width:100%;height:120px;object-fit:cover;display:block;}
+.card-ph{width:100%;height:120px;display:flex;align-items:center;justify-content:center;background:var(--surface2);font-size:28px;}
+.card-body{padding:.65rem .75rem;}
+.card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
 .loc-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:500;padding:2px 7px;border-radius:6px;font-family:var(--mono);}
-.loc-Casa{background:rgba(29,158,117,.15);color:#4fcca0;}
-.loc-Estudio{background:rgba(55,138,221,.15);color:#60aae8;}
-.loc-Lavanderia{background:rgba(186,117,23,.15);color:#e8a84a;}
-.loc-Emprestimo{background:rgba(216,90,48,.15);color:#e87a55;}
 .owner-ind{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-dim);}
 .odot{width:7px;height:7px;border-radius:50%;}
-.card-num{font-size:14px;font-weight:500;}
+.card-num{font-size:13px;font-weight:500;}
 .card-meta{font-size:11px;color:var(--text-dim);font-family:var(--mono);margin-top:1px;}
-.card-res{font-size:10px;background:rgba(212,83,126,.12);color:#d4537e;border-radius:6px;padding:2px 7px;margin-top:6px;display:inline-block;font-family:var(--mono);}
-.card-ar{display:flex;justify-content:flex-end;margin-top:8px;}
+.card-res{font-size:10px;background:rgba(212,83,126,.12);color:#d4537e;border-radius:6px;padding:2px 7px;margin-top:4px;display:inline-block;font-family:var(--mono);}
+/* USAGE BAR */
+.usage-wrap{margin-top:6px;}
+.usage-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;}
+.usage-label{font-size:10px;color:var(--text-dim);font-family:var(--mono);}
+.usage-count{font-size:10px;font-family:var(--mono);}
+.usage-bar-bg{width:100%;height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+.usage-bar-fill{height:100%;border-radius:2px;transition:width .3s;}
+.card-actions{display:flex;gap:5px;margin-top:7px;justify-content:flex-end;}
 .res-btn{padding:3px 9px;font-size:11px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text-muted);cursor:pointer;font-family:var(--font);transition:all .15s;}
 .res-btn:hover{border-color:var(--border-hover);color:var(--text);}
 .res-btn.taken{color:var(--text-dim);border-color:transparent;cursor:default;}
-
+.checkin-btn{padding:3px 9px;font-size:11px;border:1px solid rgba(232,255,71,.3);border-radius:6px;background:transparent;color:var(--accent);cursor:pointer;font-family:var(--font);transition:all .15s;}
+.checkin-btn:hover{background:var(--accent-dim);}
+/* LIST VIEW */
+.list-table{width:100%;border-collapse:collapse;}
+.list-table th{font-size:11px;color:var(--text-dim);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);font-weight:400;}
+.list-table td{padding:9px 12px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text-muted);vertical-align:middle;}
+.list-table tr:last-child td{border-bottom:none;}
+.list-table tr{cursor:pointer;transition:background .1s;}
+.list-table tr:hover td{background:var(--surface2);}
+.list-thumb{width:34px;height:34px;object-fit:cover;border-radius:6px;display:block;}
+.list-thumb-ph{width:34px;height:34px;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:14px;}
+.list-team{font-size:13px;font-weight:500;color:var(--text);}
+.list-group-row td{padding:12px 12px 5px;font-size:13px;font-weight:500;color:var(--text);background:transparent;border-bottom:none;border-top:1px solid var(--border);}
+.list-group-row:first-child td{border-top:none;}
 .empty{padding:3rem;text-align:center;color:var(--text-dim);font-size:14px;}
-
+/* MODAL */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:200;padding:1rem;backdrop-filter:blur(4px);}
-.modal{background:var(--surface);border:1px solid var(--border-hover);border-radius:var(--radius);padding:1.5rem;width:100%;max-width:400px;max-height:90vh;overflow-y:auto;}
+.modal{background:var(--surface);border:1px solid var(--border-hover);border-radius:var(--radius);padding:1.5rem;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;}
 .modal-title{font-size:16px;font-weight:500;margin-bottom:1.25rem;letter-spacing:-.01em;}
 .fg{margin-bottom:1rem;}
 .fl{font-size:11px;color:var(--text-dim);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;display:block;}
 .fi{width:100%;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:14px;font-family:var(--font);outline:none;transition:border-color .15s;}
 .fi:focus{border-color:var(--border-hover);}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:1.25rem;flex-wrap:wrap;}
-
-.photo-upload{width:100%;height:110px;border:1px dashed var(--border-hover);border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;gap:6px;background:var(--surface2);transition:border-color .15s;}
+.photo-upload{width:100%;height:100px;border:1px dashed var(--border-hover);border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;gap:5px;background:var(--surface2);transition:border-color .15s;}
 .photo-upload:hover{border-color:var(--accent);}
 .photo-upload-label{font-size:12px;color:var(--text-dim);}
-.photo-preview{width:100%;height:110px;object-fit:cover;border-radius:var(--radius-sm);display:block;cursor:pointer;}
-.detail-img{width:100%;max-height:200px;object-fit:cover;border-radius:var(--radius-sm);margin-bottom:1rem;cursor:pointer;}
-
+.photo-preview{width:100%;height:100px;object-fit:cover;border-radius:var(--radius-sm);display:block;cursor:pointer;}
+.detail-img{width:100%;max-height:180px;object-fit:cover;border-radius:var(--radius-sm);margin-bottom:1rem;cursor:pointer;}
 .owner-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1rem;}
 .owner-tag{display:flex;align-items:center;gap:7px;padding:5px 10px;border:1px solid var(--border);border-radius:20px;font-size:13px;background:var(--surface2);}
 .otdot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
@@ -120,29 +128,19 @@ select.flt{padding:8px 12px;background:var(--surface);border:1px solid var(--bor
 .copt{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .1s,transform .1s;}
 .copt:hover{transform:scale(1.1);}
 .copt.sel{border-color:white;}
-
 .res-list .ri{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text-muted);}
 .res-list .ri:last-child{border-bottom:none;}
-
-.view-toggle{display:flex;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;}
-.view-btn{padding:6px 10px;background:transparent;border:none;cursor:pointer;color:var(--text-dim);display:flex;align-items:center;transition:all .15s;}
-.view-btn:hover{color:var(--text);background:var(--surface2);}
-.view-btn.active{background:var(--surface2);color:var(--text);}
-
-.list-table{width:100%;border-collapse:collapse;}
-.list-table th{font-size:11px;color:var(--text-dim);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);font-weight:400;}
-.list-table td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text-muted);vertical-align:middle;}
-.list-table tr:last-child td{border-bottom:none;}
-.list-table tr{cursor:pointer;transition:background .1s;}
-.list-table tr:hover td{background:var(--surface2);}
-.list-thumb{width:36px;height:36px;object-fit:cover;border-radius:6px;display:block;}
-.list-thumb-ph{width:36px;height:36px;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:16px;}
-.list-team{font-size:14px;font-weight:500;color:var(--text);}
-.list-group-row td{padding:14px 12px 6px;font-size:13px;font-weight:500;color:var(--text);background:transparent;border-bottom:none;border-top:1px solid var(--border);}
-.list-group-row:first-child td{border-top:none;}
-
+.hist-item{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-muted);}
+.hist-item:last-child{border-bottom:none;}
+/* LOGIN */
+.login-wrap{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:300;backdrop-filter:blur(6px);}
+.login-box{background:var(--surface);border:1px solid var(--border-hover);border-radius:var(--radius);padding:2rem;width:100%;max-width:320px;}
+.login-title{font-size:16px;font-weight:500;margin-bottom:1.5rem;color:var(--text);}
+/* PDF hidden */
+@media print{body{background:#fff;color:#000;}.no-print{display:none!important;}.pdf-wrap{display:block!important;}}
+.pdf-wrap{display:none;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
-@media(max-width:480px){
+@media(max-width:500px){
   .stats{grid-template-columns:repeat(2,1fr);}
   .shirt-grid{grid-template-columns:repeat(2,1fr);}
   .header{flex-direction:column;}
@@ -151,33 +149,24 @@ select.flt{padding:8px 12px;background:var(--surface);border:1px solid var(--bor
 </head>
 <body>
 
-<div class="loading-screen" id="ls">
+<div class="ls" id="ls">
   <div class="spinner"></div>
-  <div class="loading-text">carregando camisas...</div>
+  <div class="ls-txt">carregando camisas...</div>
 </div>
 
-<div class="app" id="app" style="display:none">
+<div class="app no-print" id="app" style="display:none">
   <div class="header">
     <div>
-      <div class="brand-title">Camisas</div>
-      <div class="brand-sub" id="brandSub">estúdio</div>
-    </div>
-    <div class="header-actions">
-      <div class="view-toggle">
-        <button class="view-btn active" id="btnGrid" onclick="setView('grid')" title="Grade">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="0" y="0" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y="0" width="6" height="6" rx="1" fill="currentColor"/><rect x="0" y="8" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y="8" width="6" height="6" rx="1" fill="currentColor"/></svg>
-        </button>
-        <button class="view-btn" id="btnList" onclick="setView('list')" title="Lista">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="0" y="1" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="6" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="11" width="14" height="2" rx="1" fill="currentColor"/></svg>
-        </button>
+      <div class="brand-title" id="brandTitle">Camisas</div>
+      <div class="brand-sub">
+        <span id="brandSub">estúdio</span>
+        <span class="admin-badge" id="adminBadge" style="display:none" onclick="logoutAdmin()">admin ✕</span>
       </div>
-      <button class="btn btn-sm" onclick="openPeople()">Origens</button>
-      <button class="btn btn-sm" onclick="openLocais()">Locais</button>
-      <button class="btn btn-accent" onclick="openAdd()">+ Adicionar</button>
     </div>
+    <div class="header-actions" id="headerActions"></div>
   </div>
   <div class="stats" id="stats"></div>
-  <div class="owner-bar" id="ligaBar"></div>
+  <div class="liga-bar" id="ligaBar"></div>
   <div class="controls">
     <input class="search" id="search" type="text" placeholder="Buscar time..." oninput="render()">
     <select class="flt" id="filterLoc" onchange="render()">
@@ -185,9 +174,13 @@ select.flt{padding:8px 12px;background:var(--surface);border:1px solid var(--bor
     </select>
   </div>
   <div id="content"></div>
+  <div style="margin-top:3rem;text-align:center;">
+    <span style="font-size:11px;color:var(--text-dim);font-family:var(--mono);cursor:default;" id="footerHint">&nbsp;</span>
+  </div>
 </div>
 
 <div id="modalRoot"></div>
+<div id="loginRoot"></div>
 <div class="toast" id="toast"></div>
 <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(event)">
 
@@ -195,14 +188,25 @@ select.flt{padding:8px 12px;background:var(--surface);border:1px solid var(--bor
 const SB_URL='https://cufupfifhhfqnpeypwqp.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN1ZnVwZmlmaGhmcW5wZXlwd3FwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTAzOTMsImV4cCI6MjA4OTQyNjM5M30.bLmcXpusXPIsxTL5olm1WJSsZU1ldaoBrG9VAPwqQ04';
 const sb=supabase.createClient(SB_URL,SB_KEY);
-
+const ADMIN_PASS='estudio2025';
 const COLORS=['#378ADD','#4fcca0','#e87a55','#d4537e','#e8a84a','#a78bfa','#86efac','#f87171','#888780'];
-const LOC_COLORS=['rgba(29,158,117,.15)','rgba(55,138,221,.15)','rgba(186,117,23,.15)','rgba(216,90,48,.15)','rgba(163,123,251,.15)','rgba(212,83,126,.15)'];
-const LOC_TEXT=['#4fcca0','#60aae8','#e8a84a','#e87a55','#a78bfa','#d4537e'];
+const LOC_COLORS=['rgba(29,158,117,.15)','rgba(55,138,221,.15)','rgba(186,117,23,.15)','rgba(216,90,48,.15)','rgba(163,123,251,.15)','rgba(212,83,126,.15)','rgba(232,255,71,.1)','rgba(248,113,113,.15)'];
+const LOC_TEXT=['#4fcca0','#60aae8','#e8a84a','#e87a55','#a78bfa','#d4537e','#c8e040','#f87171'];
 
-let owners=[],shirts=[],reservations=[],locations=[],activeOwner='',pendingPhoto=null,selColor=COLORS[0],addPhoto=null;
+let owners=[],shirts=[],reservations=[],locations=[],usages=[],settings={};
+let activeLiga='',viewMode='grid',isAdmin=false,addPhoto=null,pendingPhoto=null,selColor=COLORS[0];
+let titleClickCount=0,titleClickTimer=null;
 
+// ── HELPERS ───────────────────────────────────────────
+function ownerById(id){return owners.find(o=>o.id===id)||{name:'?',color:'#555'};}
+function fmt(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}/${m}`;}
+function resByShirt(id){return reservations.filter(r=>r.shirt_id===id);}
+function usagesByShirt(id){return usages.filter(u=>u.shirt_id===id);}
 function locLabel(id){const l=locations.find(x=>x.id===id);return l?l.name:id;}
+function isLaundry(locId){const l=locations.find(x=>x.id===locId);return l&&l.is_laundry;}
+function isLoan(locId){const l=locations.find(x=>x.id===locId);return l&&l.is_loan;}
+function maxUses(){return parseInt(settings.max_uses)||5;}
+
 function locStyle(id){
   const idx=locations.findIndex(x=>x.id===id);
   const i=idx>=0?idx%LOC_COLORS.length:0;
@@ -211,28 +215,92 @@ function locStyle(id){
 
 function toast(msg,err=false){
   const el=document.getElementById('toast');
-  el.textContent=msg; el.className='toast show'+(err?' err':'');
-  clearTimeout(el._t); el._t=setTimeout(()=>el.className='toast',2500);
+  el.textContent=msg;el.className='toast show'+(err?' err':'');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.className='toast',2500);
 }
 
-function ownerById(id){return owners.find(o=>o.id===id)||{name:'?',color:'#555'};}
-function fmt(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}/${m}`;}
-function resByShirt(id){return reservations.filter(r=>r.shirt_id===id);}
+// ── ADMIN AUTH ────────────────────────────────────────
+function handleTitleClick(){
+  titleClickCount++;
+  clearTimeout(titleClickTimer);
+  if(titleClickCount>=3){titleClickCount=0;isAdmin?null:openLogin();return;}
+  titleClickTimer=setTimeout(()=>titleClickCount=0,600);
+}
 
+function openLogin(){
+  document.getElementById('loginRoot').innerHTML=`
+    <div class="login-wrap" onclick="if(event.target===this)closeLogin()">
+      <div class="login-box">
+        <div class="login-title">Acesso admin</div>
+        <div class="fg"><label class="fl">Senha</label>
+          <input class="fi" type="password" id="adminPw" placeholder="••••••••" onkeydown="if(event.key==='Enter')confirmLogin()">
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-sm" onclick="closeLogin()">cancelar</button>
+          <button class="btn btn-sm btn-accent" onclick="confirmLogin()">entrar</button>
+        </div>
+      </div>
+    </div>`;
+  setTimeout(()=>document.getElementById('adminPw')?.focus(),100);
+}
+
+function confirmLogin(){
+  const pw=document.getElementById('adminPw').value;
+  if(pw===ADMIN_PASS){isAdmin=true;closeLogin();renderHeader();toast('Modo admin ativado!');}
+  else{toast('Senha incorreta',true);}
+}
+function closeLogin(){document.getElementById('loginRoot').innerHTML='';}
+function logoutAdmin(){isAdmin=false;renderHeader();toast('Saiu do modo admin');}
+
+// ── LOAD ──────────────────────────────────────────────
 async function loadAll(){
-  const[{data:ow},{data:sh},{data:re},{data:lo}]=await Promise.all([
+  const[{data:ow},{data:sh},{data:re},{data:lo},{data:us},{data:st}]=await Promise.all([
     sb.from('owners').select('*').order('name'),
     sb.from('shirts').select('*').order('time'),
     sb.from('reservations').select('*').order('data'),
     sb.from('locations').select('*').order('sort_order'),
+    sb.from('usages').select('*').order('used_at',{ascending:false}),
+    sb.from('settings').select('*'),
   ]);
-  owners=ow||[]; shirts=sh||[]; reservations=re||[]; locations=lo||[];
+  owners=ow||[];shirts=sh||[];reservations=re||[];locations=lo||[];usages=us||[];
+  const sr=st||[];settings={};sr.forEach(r=>settings[r.key]=r.value);
   document.getElementById('ls').style.display='none';
   document.getElementById('app').style.display='block';
-  render();
+  renderHeader();render();
 }
 
-let activeLiga='';
+// ── HEADER ────────────────────────────────────────────
+function renderHeader(){
+  document.getElementById('adminBadge').style.display=isAdmin?'inline-flex':'none';
+  const ha=document.getElementById('headerActions');
+  const viewToggle=`<div class="view-toggle">
+    <button class="view-btn${viewMode==='grid'?' active':''}" id="btnGrid" onclick="setView('grid')" title="Grade">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="0" y="0" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y="0" width="6" height="6" rx="1" fill="currentColor"/><rect x="0" y="8" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y="8" width="6" height="6" rx="1" fill="currentColor"/></svg>
+    </button>
+    <button class="view-btn${viewMode==='list'?' active':''}" id="btnList" onclick="setView('list')" title="Lista">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="0" y="1" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="6" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="11" width="14" height="2" rx="1" fill="currentColor"/></svg>
+    </button>
+  </div>`;
+  if(isAdmin){
+    ha.innerHTML=viewToggle+
+      `<button class="btn btn-sm" onclick="openPeople()">Origens</button>`+
+      `<button class="btn btn-sm" onclick="openLocais()">Locais</button>`+
+      `<button class="btn btn-sm" onclick="openSettings()">Config</button>`+
+      `<button class="btn btn-sm" onclick="gerarPDF()">PDF</button>`+
+      `<button class="btn btn-accent" onclick="openAdd()">+ Adicionar</button>`;
+  } else {
+    ha.innerHTML=viewToggle;
+  }
+}
+
+// ── STATS + FILTERS ───────────────────────────────────
+function renderStats(){
+  const src=activeLiga?shirts.filter(s=>s.liga===activeLiga):shirts;
+  document.getElementById('stats').innerHTML=locations.map(l=>
+    `<div class="stat"><div class="stat-label">${l.name}</div>
+     <div class="stat-num">${src.filter(s=>s.loc===l.id).length} <span>camisas</span></div></div>`
+  ).join('');
+}
 
 function renderLigaBar(){
   const ligas=[...new Set(shirts.map(s=>s.liga))].sort();
@@ -241,12 +309,17 @@ function renderLigaBar(){
     ligas.map(l=>{
       const cnt=shirts.filter(s=>s.liga===l).length;
       return`<button class="pill${activeLiga===l?' active':''}" onclick="setLiga('${l}')">
-        ${l}<span class="pill-count">${cnt}</span>
-      </button>`;
+        ${l}<span class="pill-count">${cnt}</span></button>`;
     }).join('');
 }
 
 function setLiga(l){activeLiga=l;render();}
+
+function updateFilters(){
+  const sel=document.getElementById('filterLoc'),cur=sel.value;
+  sel.innerHTML='<option value="">Todos os locais</option>'+
+    locations.map(l=>`<option value="${l.id}"${l.id===cur?' selected':''}}>${l.name}</option>`).join('');
+}
 
 function getFiltered(){
   const q=document.getElementById('search').value.toLowerCase();
@@ -259,29 +332,24 @@ function getFiltered(){
   });
 }
 
-function renderStats(){
-  const src=activeLiga?shirts.filter(s=>s.liga===activeLiga):shirts;
-  document.getElementById('stats').innerHTML=locations.map(l=>
-    `<div class="stat"><div class="stat-label">${l.name}</div>
-     <div class="stat-num">${src.filter(s=>s.loc===l.id).length} <span>camisas</span></div></div>`
-  ).join('');
+function setView(v){viewMode=v;renderHeader();render();}
+
+// ── USAGE BAR ─────────────────────────────────────────
+function usageBar(shirtId){
+  const u=usagesByShirt(shirtId).length;
+  const max=maxUses();
+  const pct=Math.min(100,Math.round(u/max*100));
+  const color=pct>=100?'#e24b4a':pct>=75?'#e8a84a':'#4fcca0';
+  return`<div class="usage-wrap">
+    <div class="usage-row">
+      <span class="usage-label">usos desde última lavagem</span>
+      <span class="usage-count" style="color:${color}">${u}/${max}</span>
+    </div>
+    <div class="usage-bar-bg"><div class="usage-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+  </div>`;
 }
 
-function updateFilters(){
-  const locSel=document.getElementById('filterLoc'),curLoc=locSel.value;
-  locSel.innerHTML='<option value="">Todos os locais</option>'+
-    locations.map(l=>`<option value="${l.id}"${l.id===curLoc?' selected':''}>${l.name}</option>`).join('');
-}
-
-let viewMode='grid';
-
-function setView(v){
-  viewMode=v;
-  document.getElementById('btnGrid').classList.toggle('active',v==='grid');
-  document.getElementById('btnList').classList.toggle('active',v==='list');
-  render();
-}
-
+// ── RENDER ────────────────────────────────────────────
 function render(){
   renderLigaBar();renderStats();updateFilters();
   const filtered=getFiltered();
@@ -291,59 +359,22 @@ function render(){
   const teams=Object.keys(groups).sort();
   if(!teams.length){document.getElementById('content').innerHTML='<div class="empty">Nenhuma camisa encontrada.</div>';return;}
 
-  if(viewMode==='list'){
-    const empLoc=locations.find(l=>l.is_loan);
-    const rows=teams.map((team,i)=>{
-      const list=groups[team];
-      const dataRows=list.map(s=>{
-        const o=ownerById(s.owner_id);
-        const res=resByShirt(s.id);
-        const lr=res.length?res[res.length-1]:null;
-        const thumb=s.foto
-          ?`<img class="list-thumb" src="${s.foto}" alt="${s.time}">`
-          :`<div class="list-thumb-ph">👕</div>`;
-        const status=empLoc&&s.loc===empLoc.id
-          ?`<span style="color:#e87a55">emprestada</span>`
-          :lr?`<span style="color:#d4537e">reservada · ${lr.nome}</span>`
-          :`<button class="res-btn" onclick="event.stopPropagation();openReserva(${s.id})">reservar</button>`;
-        return`<tr onclick="openDetail(${s.id})">
-          <td>${thumb}</td>
-          <td><div class="list-team">${s.time}</div><div style="font-size:11px;color:var(--text-dim);font-family:var(--mono)">${s.liga}</div></td>
-          <td><span style="color:var(--text-dim);font-family:var(--mono);font-size:11px">#${s.codigo||'—'}</span></td>
-          <td>${s.ano}</td>
-          <td style="color:var(--text-muted)">${s.tipo||'—'}</td>
-          <td><div class="loc-badge" style="${locStyle(s.loc)}">${locLabel(s.loc)}</div></td>
-          <td><div class="owner-ind"><span class="odot" style="background:${o.color}"></span>${o.name}</div></td>
-          <td>${status}</td>
-        </tr>`;
-      }).join('');
-      return`<tr class="list-group-row"><td colspan="7">${team} <span style="font-size:11px;color:var(--text-dim);font-weight:400">${list.length}</span></td></tr>${dataRows}`;
-    }).join('');
-    document.getElementById('content').innerHTML=`
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
-        <table class="list-table">
-          <thead><tr>
-            <th></th><th>Time</th><th>#</th><th>Tipo</th><th>Ano</th><th>Local</th><th>Origem</th><th></th>
-          </tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>`;
-    return;
-  }
+  if(viewMode==='list'){renderList(teams,groups);return;}
 
   document.getElementById('content').innerHTML=teams.map((team,i)=>{
     const list=groups[team];
-    const empLoc=locations.find(l=>l.is_loan);
     const cards=list.map(s=>{
       const o=ownerById(s.owner_id);
       const res=resByShirt(s.id);
       const lr=res.length?res[res.length-1]:null;
       const img=s.foto?`<img class="card-img" src="${s.foto}" alt="${s.time}">`:`<div class="card-ph">👕</div>`;
       const rb=lr?`<div class="card-res">⏺ ${lr.nome} · ${fmt(lr.data)}</div>`:'';
-      const ab=empLoc&&s.loc===empLoc.id
-        ?`<button class="res-btn taken">emprestada</button>`
-        :lr?`<button class="res-btn taken">reservada</button>`
-        :`<button class="res-btn" onclick="event.stopPropagation();openReserva(${s.id})">reservar</button>`;
+      const laundry=isLaundry(s.loc);
+      const loan=isLoan(s.loc);
+      const checkinBtn=!laundry&&!loan?`<button class="checkin-btn" onclick="event.stopPropagation();doCheckin(${s.id})">✓ usar</button>`:'';
+      const resBtn=loan?`<button class="res-btn taken">emprestada</button>`:
+        lr?`<button class="res-btn taken">reservada</button>`:
+        `<button class="res-btn" onclick="event.stopPropagation();openReserva(${s.id})">reservar</button>`;
       return`<div class="card" onclick="openDetail(${s.id})">
         ${img}
         <div class="card-body">
@@ -351,41 +382,134 @@ function render(){
             <div class="loc-badge" style="${locStyle(s.loc)}">${locLabel(s.loc)}</div>
             <div class="owner-ind"><span class="odot" style="background:${o.color}"></span>${o.name}</div>
           </div>
-          <div class="card-num">#${s.codigo||'—'} · ${s.ano}</div>
-          <div class="card-meta">${s.liga}${s.tipo?' · '+s.tipo:''}</div>
-          ${rb}<div class="card-ar">${ab}</div>
+          <div class="card-num">#${s.codigo||'—'} · ${s.tipo||''}</div>
+          <div class="card-meta">${s.liga} · ${s.ano}</div>
+          ${rb}
+          ${laundry?'':`${usageBar(s.id)}`}
+          <div class="card-actions">${checkinBtn}${resBtn}</div>
         </div>
       </div>`;
     }).join('');
-    return`<div class="team-group" style="animation-delay:${i*.05}s">
+    return`<div class="team-group" style="animation-delay:${i*.04}s">
       <div class="team-header"><span class="team-label">${team}</span><span class="team-count">${list.length}</span></div>
       <div class="shirt-grid">${cards}</div>
     </div>`;
   }).join('');
 }
 
+function renderList(teams,groups){
+  const rows=teams.map((team)=>{
+    const list=groups[team];
+    const drows=list.map(s=>{
+      const o=ownerById(s.owner_id);
+      const res=resByShirt(s.id);
+      const lr=res.length?res[res.length-1]:null;
+      const thumb=s.foto?`<img class="list-thumb" src="${s.foto}">`:`<div class="list-thumb-ph">👕</div>`;
+      const u=usagesByShirt(s.id).length;const max=maxUses();
+      const pct=Math.min(100,Math.round(u/max*100));
+      const bc=pct>=100?'#e24b4a':pct>=75?'#e8a84a':'#4fcca0';
+      const ubar=isLaundry(s.loc)?'':`<div style="width:60px;height:3px;background:var(--border);border-radius:2px;margin-top:3px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${bc};border-radius:2px"></div></div>`;
+      const loan=isLoan(s.loc);
+      const laundry=isLaundry(s.loc);
+      const status=loan?`<span style="color:#e87a55;font-size:11px">emprestada</span>`:
+        lr?`<span style="color:#d4537e;font-size:11px">reservada</span>`:
+        `<button class="checkin-btn" style="font-size:11px" onclick="event.stopPropagation();doCheckin(${s.id})">✓ usar</button>`;
+      return`<tr onclick="openDetail(${s.id})">
+        <td>${thumb}</td>
+        <td><div class="list-team">${s.time}</div><div style="font-size:11px;color:var(--text-dim);font-family:var(--mono)">${s.liga}</div></td>
+        <td style="font-family:var(--mono);font-size:11px;color:var(--text-dim)">#${s.codigo||'—'}</td>
+        <td style="color:var(--text-muted)">${s.tipo||'—'}</td>
+        <td style="color:var(--text-muted)">${s.ano}</td>
+        <td><div class="loc-badge" style="${locStyle(s.loc)}">${locLabel(s.loc)}</div></td>
+        <td><div class="owner-ind"><span class="odot" style="background:${o.color}"></span>${o.name}</div></td>
+        <td><div style="font-size:11px;color:var(--text-dim);font-family:var(--mono)">${laundry?'lavanderia':`${u}/${max}`}</div>${ubar}</td>
+        <td>${status}</td>
+      </tr>`;
+    }).join('');
+    return`<tr class="list-group-row"><td colspan="9">${team} <span style="font-size:11px;color:var(--text-dim);font-weight:400">${list.length}</span></td></tr>${drows}`;
+  }).join('');
+  document.getElementById('content').innerHTML=`
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;overflow-x:auto;">
+      <table class="list-table">
+        <thead><tr><th></th><th>Time</th><th>#</th><th>Tipo</th><th>Ano</th><th>Local</th><th>Origem</th><th>Usos</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+// ── CHECK-IN ──────────────────────────────────────────
+async function doCheckin(id){
+  const today=new Date().toISOString().slice(0,10);
+  const{error}=await sb.from('usages').insert({shirt_id:id,used_at:today,type:'checkin'});
+  if(error){toast('Erro no check-in',true);return;}
+  await loadAll();toast('✓ Uso registrado!');
+}
+
+// ── MOVE LOCAL (público pode) ─────────────────────────
+async function moveLocal(shirtId,newLoc){
+  const laundry=isLaundry(newLoc);
+  await sb.from('shirts').update({loc:newLoc}).eq('id',shirtId);
+  if(laundry){
+    await sb.from('usages').delete().eq('shirt_id',shirtId);
+    toast('Movida pra lavanderia — usos zerados!');
+  } else {
+    toast('Local atualizado!');
+  }
+  await loadAll();closeModal();
+}
+
+// ── DETAIL MODAL ──────────────────────────────────────
 function openDetail(id){
   const s=shirts.find(x=>x.id===id);
   const res=resByShirt(id);
+  const hist=usagesByShirt(id).slice(0,10);
   const img=s.foto?`<img class="detail-img" src="${s.foto}">`
-    :`<div class="photo-upload"><div style="font-size:22px">📷</div><div class="photo-upload-label">Adicionar foto</div></div>`;
+    :`<div class="photo-upload"${isAdmin?` onclick="triggerPhoto('detail',${id})"`:''}>
+        <div style="font-size:20px">📷</div>
+        <div class="photo-upload-label">${isAdmin?'Adicionar foto':'Sem foto'}</div>
+      </div>`;
   const rl=res.length
-    ?res.map(r=>`<div class="ri"><span>${r.nome} · ${fmt(r.data)}</span><button class="btn btn-sm btn-danger" onclick="removeRes(${r.id},${id})">remover</button></div>`).join('')
+    ?res.map(r=>`<div class="ri"><span>${r.nome} · ${fmt(r.data)}</span>${isAdmin?`<button class="btn btn-sm btn-danger" onclick="removeRes(${r.id},${id})">remover</button>`:''}</div>`).join('')
     :`<div style="font-size:13px;color:var(--text-dim)">Sem reservas</div>`;
-  const oo=owners.map(o=>`<option value="${o.id}"${o.id===s.owner_id?' selected':''}>${o.name}</option>`).join('');
+  const histHtml=hist.length
+    ?hist.map(u=>`<div class="hist-item"><span>${u.type==='reserva'?'Reserva':'Check-in'}</span><span style="font-family:var(--mono)">${fmt(u.used_at)}</span></div>`).join('')
+    :`<div style="font-size:13px;color:var(--text-dim)">Sem histórico</div>`;
+  const u=usagesByShirt(id).length;const max=maxUses();
+  const laundry=isLaundry(s.loc);
+
+  const locOpts=locations.map(l=>`<option value="${l.id}"${l.id===s.loc?' selected':''}}>${l.name}</option>`).join('');
+
+  let adminFields='';
+  if(isAdmin){
+    const oo=owners.map(o=>`<option value="${o.id}"${o.id===s.owner_id?' selected':''}}>${o.name}</option>`).join('');
+    adminFields=`
+      <div class="fg"><label class="fl">Time</label><input class="fi" type="text" id="dTime" value="${s.time}"></div>
+      <div class="fg"><label class="fl">Liga</label><input class="fi" type="text" id="dLiga" value="${s.liga}"></div>
+      <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div><label class="fl">Tipo</label>
+          <select class="fi" id="dTipo">
+            <option value="">—</option>
+            ${['I','II','III','Treino'].map(t=>`<option value="${t}"${s.tipo===t?' selected':''}}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div><label class="fl">Temporada</label><input class="fi" type="text" id="dAno" value="${s.ano||''}"></div>
+      </div>
+      <div class="fg"><label class="fl">Origem</label><select class="fi" id="dOwner">${oo}</select></div>`;
+  }
+
   showModal(`<div class="modal">
-    <div class="modal-title">${s.time} <span style="color:var(--text-dim);font-size:13px;font-family:var(--mono)">#${s.codigo||'—'}</span></div>
-    <div style="cursor:pointer;margin-bottom:1rem" onclick="triggerPhoto('detail',${id})">${img}</div>
+    <div class="modal-title">${s.time} <span style="color:var(--text-dim);font-size:12px;font-family:var(--mono)">#${s.codigo||'—'}</span></div>
+    ${isAdmin?`<div style="cursor:pointer;margin-bottom:1rem" onclick="triggerPhoto('detail',${id})">${img}</div>`:
+      `<div style="margin-bottom:1rem">${img}</div>`}
+    ${adminFields}
     <div class="fg"><label class="fl">Local</label>
-      <select class="fi" id="dLoc">${locations.map(l=>`<option value="${l.id}"${l.id===s.loc?' selected':''}>${l.name}</option>`).join('')}</select>
+      <select class="fi" id="dLoc">${locOpts}</select>
     </div>
-    <div class="fg"><label class="fl">Origem</label><select class="fi" id="dOwner">${oo}</select></div>
-    <div class="fg"><label class="fl">Liga · Temporada</label>
-      <div style="font-size:14px;color:var(--text-muted)">${s.liga} · ${s.ano}</div>
-    </div>
+    ${laundry?'':`<div class="fg">${usageBar(id)}</div>`}
     <div class="fg"><label class="fl">Reservas</label><div class="res-list">${rl}</div></div>
+    <div class="fg"><label class="fl">Histórico de uso (últimos 10)</label><div>${histHtml}</div></div>
     <div class="modal-actions">
-      <button class="btn btn-sm btn-danger" onclick="deleteShirt(${id})">excluir</button>
+      ${isAdmin?`<button class="btn btn-sm btn-danger" onclick="deleteShirt(${id})">excluir</button>`:''}
       <button class="btn btn-sm" onclick="closeModal()">fechar</button>
       <button class="btn btn-sm btn-accent" id="sdBtn" onclick="saveDetail(${id})">salvar</button>
     </div>
@@ -393,10 +517,23 @@ function openDetail(id){
 }
 
 async function saveDetail(id){
-  const btn=document.getElementById('sdBtn');
-  btn.disabled=true;btn.textContent='salvando...';
-  const{error}=await sb.from('shirts').update({loc:document.getElementById('dLoc').value,owner_id:document.getElementById('dOwner').value,tipo:document.getElementById('dTipo').value||null}).eq('id',id);
-  if(error){toast('Erro ao salvar',true);btn.disabled=false;btn.textContent='salvar';return;}
+  const btn=document.getElementById('sdBtn');btn.disabled=true;btn.textContent='salvando...';
+  const newLoc=document.getElementById('dLoc').value;
+  const s=shirts.find(x=>x.id===id);
+  const locChanged=newLoc!==s.loc;
+  let upd={loc:newLoc};
+  if(isAdmin){
+    upd.time=document.getElementById('dTime').value.trim()||s.time;
+    upd.liga=document.getElementById('dLiga').value.trim()||s.liga;
+    upd.tipo=document.getElementById('dTipo').value||null;
+    upd.ano=document.getElementById('dAno').value.trim()||s.ano;
+    upd.owner_id=document.getElementById('dOwner').value;
+  }
+  await sb.from('shirts').update(upd).eq('id',id);
+  if(locChanged&&isLaundry(newLoc)){
+    await sb.from('usages').delete().eq('shirt_id',id);
+    await loadAll();closeModal();toast('Movida pra lavanderia — usos zerados!');return;
+  }
   await loadAll();closeModal();toast('Salvo!');
 }
 
@@ -411,10 +548,11 @@ async function removeRes(resId,shirtId){
   await loadAll();openDetail(shirtId);
 }
 
+// ── RESERVA ───────────────────────────────────────────
 function openReserva(id){
   const s=shirts.find(x=>x.id===id);
   showModal(`<div class="modal">
-    <div class="modal-title">Reservar · ${s.time} <span style="color:var(--text-dim);font-size:13px;font-family:var(--mono)">#${s.codigo||'—'}</span></div>
+    <div class="modal-title">Reservar · ${s.time} <span style="color:var(--text-dim);font-size:12px;font-family:var(--mono)">#${s.codigo||'—'}</span></div>
     <div class="fg"><label class="fl">Seu nome</label><input class="fi" type="text" id="rNome" placeholder="Ex: João"></div>
     <div class="fg"><label class="fl">Data de uso</label><input class="fi" type="date" id="rData"></div>
     <div class="modal-actions">
@@ -429,11 +567,15 @@ async function confirmRes(id){
   const data=document.getElementById('rData').value;
   if(!nome||!data){toast('Preencha nome e data',true);return;}
   const btn=document.getElementById('crBtn');btn.disabled=true;btn.textContent='salvando...';
-  const{error}=await sb.from('reservations').insert({shirt_id:id,nome,data});
-  if(error){toast('Erro ao reservar',true);btn.disabled=false;btn.textContent='confirmar';return;}
+  const[{error:e1},{error:e2}]=await Promise.all([
+    sb.from('reservations').insert({shirt_id:id,nome,data}),
+    sb.from('usages').insert({shirt_id:id,used_at:data,type:'reserva'})
+  ]);
+  if(e1){toast('Erro ao reservar',true);btn.disabled=false;btn.textContent='confirmar';return;}
   await loadAll();closeModal();toast('Reservado!');
 }
 
+// ── ADD (admin) ───────────────────────────────────────
 function openAdd(){
   addPhoto=null;
   const oo=owners.map(o=>`<option value="${o.id}">${o.name}</option>`).join('');
@@ -441,26 +583,22 @@ function openAdd(){
     <div class="modal-title">Nova camisa</div>
     <div class="fg"><label class="fl">Foto</label>
       <div class="photo-upload" onclick="triggerPhoto('add',null)" id="addPhotoArea">
-        <div style="font-size:22px">📷</div><div class="photo-upload-label">Toque para adicionar</div>
+        <div style="font-size:20px">📷</div><div class="photo-upload-label">Toque para adicionar</div>
       </div>
     </div>
     <div class="fg"><label class="fl">Origem</label><select class="fi" id="aOwner">${oo}</select></div>
     <div class="fg"><label class="fl">Time</label><input class="fi" type="text" id="aTime" placeholder="Ex: Flamengo"></div>
     <div class="fg"><label class="fl">Liga</label><input class="fi" type="text" id="aLiga" placeholder="Ex: Brasileirão"></div>
-    <div class="fg"><label class="fl">Tipo</label>
-      <select class="fi" id="aTipo">
-        <option value="">—</option>
-        <option value="I">I</option>
-        <option value="II">II</option>
-        <option value="III">III</option>
-        <option value="Treino">Treino</option>
-      </select>
+    <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><label class="fl">Tipo</label>
+        <select class="fi" id="aTipo">
+          <option value="">—</option><option>I</option><option>II</option><option>III</option><option>Treino</option>
+        </select>
+      </div>
+      <div><label class="fl">Temporada</label><input class="fi" type="text" id="aAno" placeholder="Ex: 2024"></div>
     </div>
-    <div class="fg"><label class="fl">Temporada</label><input class="fi" type="text" id="aAno" placeholder="Ex: 2024"></div>
     <div class="fg"><label class="fl">Local</label>
-      <select class="fi" id="aLoc">
-        ${locations.map(l=>`<option value="${l.id}">${l.name}</option>`).join("")}
-      </select>
+      <select class="fi" id="aLoc">${locations.map(l=>`<option value="${l.id}">${l.name}</option>`).join('')}</select>
     </div>
     <div class="modal-actions">
       <button class="btn btn-sm" onclick="closeModal()">cancelar</button>
@@ -476,72 +614,132 @@ async function confirmAdd(){
   const btn=document.getElementById('caBtn');btn.disabled=true;btn.textContent='salvando...';
   const nextCodigo=(shirts.length>0?Math.max(...shirts.map(s=>parseInt(s.codigo)||0)):0)+1;
   const{error}=await sb.from('shirts').insert({
-    time,liga,
-    codigo:nextCodigo,
+    time,liga,codigo:nextCodigo,
     tipo:document.getElementById('aTipo').value||null,
     ano:document.getElementById('aAno').value.trim()||'?',
     loc:document.getElementById('aLoc').value,
     owner_id:document.getElementById('aOwner').value,
     foto:addPhoto,
   });
-  if(error){toast('Erro ao salvar: '+error.message,true);btn.disabled=false;btn.textContent='adicionar';return;}
+  if(error){toast('Erro: '+error.message,true);btn.disabled=false;btn.textContent='adicionar';return;}
   await loadAll();closeModal();toast('Camisa adicionada!');
 }
 
+// ── ORIGENS ───────────────────────────────────────────
 function openPeople(){selColor=COLORS[0];renderPeopleModal();}
-
 function renderPeopleModal(){
-  const tags=owners.map(o=>`
-    <div class="owner-tag">
-      <span class="otdot" style="background:${o.color}"></span>
-      <span>${o.name}</span>
-      <button class="otrm" onclick="removePerson('${o.id}')">✕</button>
-    </div>`).join('');
+  const tags=owners.map(o=>`<div class="owner-tag">
+    <span class="otdot" style="background:${o.color}"></span><span>${o.name}</span>
+    <button class="otrm" onclick="removePerson('${o.id}')">✕</button>
+  </div>`).join('');
   const co=COLORS.map(c=>`<div class="copt${c===selColor?' sel':''}" style="background:${c}" onclick="pickColor('${c}')"></div>`).join('');
   showModal(`<div class="modal">
     <div class="modal-title">Origens</div>
     <div class="owner-tags">${tags||'<div style="font-size:13px;color:var(--text-dim)">Nenhuma origem.</div>'}</div>
     <div class="divider"></div>
-    <div style="font-size:11px;color:var(--text-dim);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem">Adicionar origem</div>
-    <div class="fg"><label class="fl">Nome</label><input class="fi" type="text" id="pName" placeholder="Ex: Pedro"></div>
-    <div class="fg"><label class="fl">Cor</label><div class="color-row" id="colorPicker">${co}</div></div>
+    <div style="font-size:11px;color:var(--text-dim);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem">Adicionar</div>
+    <div class="fg"><label class="fl">Nome</label><input class="fi" type="text" id="pName" placeholder="Ex: Matheus"></div>
+    <div class="fg"><label class="fl">Cor</label><div class="color-row">${co}</div></div>
     <div class="modal-actions">
       <button class="btn btn-sm" onclick="closeModal()">fechar</button>
       <button class="btn btn-sm btn-accent" id="apBtn" onclick="addPerson()">adicionar</button>
     </div>
   </div>`);
 }
-
-function pickColor(c){
-  selColor=c;
-  document.querySelectorAll('.copt').forEach(el=>el.classList.toggle('sel',el.style.background===c||el.style.backgroundColor===c));
-}
-
+function pickColor(c){selColor=c;document.querySelectorAll('.copt').forEach(el=>el.classList.toggle('sel',el.style.background===c||el.style.backgroundColor===c));}
 async function addPerson(){
   const name=document.getElementById('pName').value.trim();
   if(!name){toast('Digite um nome',true);return;}
   const btn=document.getElementById('apBtn');btn.disabled=true;btn.textContent='salvando...';
-  const id='o'+Date.now();
-  const{error}=await sb.from('owners').insert({id,name,color:selColor});
-  if(error){toast('Erro ao salvar',true);btn.disabled=false;btn.textContent='adicionar';return;}
+  const{error}=await sb.from('owners').insert({id:'o'+Date.now(),name,color:selColor});
+  if(error){toast('Erro',true);btn.disabled=false;btn.textContent='adicionar';return;}
   await loadAll();renderPeopleModal();toast('Origem adicionada!');
 }
-
 async function removePerson(id){
   const count=shirts.filter(s=>s.owner_id===id).length;
-  if(count>0){
-    alert(`Esta origem tem ${count} camisa${count>1?'s':''} vinculada${count>1?'s':''}.\nReatribua as camisas antes de remover.`);
-    return;
-  }
-  if(!confirm('Remover esta origem?'))return;
-  const{error}=await sb.from('owners').delete().eq('id',id);
-  if(error){toast('Erro ao remover: '+error.message,true);return;}
-  if(activeOwner===id)activeOwner='';
-  await loadAll();renderPeopleModal();toast('Origem removida!');
+  if(count>0){alert(`Esta origem tem ${count} camisa${count>1?'s':''} vinculada${count>1?'s':''}.\nReatribua antes de remover.`);return;}
+  if(!confirm('Remover?'))return;
+  await sb.from('owners').delete().eq('id',id);
+  await loadAll();renderPeopleModal();toast('Removido!');
 }
 
-function triggerPhoto(target,shirtId){pendingPhoto={target,shirtId};document.getElementById('fileInput').click();}
+// ── LOCAIS ────────────────────────────────────────────
+function openLocais(){renderLocaisModal();}
+function renderLocaisModal(){
+  const tags=locations.map(l=>{
+    const count=shirts.filter(s=>s.loc===l.id).length;
+    return`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="loc-badge" style="${locStyle(l.id)}">${l.name}</div>
+        <span style="font-size:11px;color:var(--text-dim)">${count} camisas</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <label style="font-size:11px;color:var(--text-dim);display:flex;align-items:center;gap:4px">
+          <input type="checkbox" ${l.is_loan?'checked':''} onchange="toggleFlag('${l.id}','is_loan',this.checked)" style="accent-color:var(--accent)">empréstimo
+        </label>
+        <label style="font-size:11px;color:var(--text-dim);display:flex;align-items:center;gap:4px">
+          <input type="checkbox" ${l.is_laundry?'checked':''} onchange="toggleFlag('${l.id}','is_laundry',this.checked)" style="accent-color:var(--accent)">lavanderia
+        </label>
+        <button class="otrm" onclick="removeLocal('${l.id}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+  showModal(`<div class="modal">
+    <div class="modal-title">Locais</div>
+    <div style="margin-bottom:1rem">${tags||'<div style="font-size:13px;color:var(--text-dim)">Nenhum local.</div>'}</div>
+    <div class="divider"></div>
+    <div style="font-size:11px;color:var(--text-dim);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem">Adicionar</div>
+    <div class="fg"><label class="fl">Nome</label><input class="fi" type="text" id="lName" placeholder="Ex: Estúdio Venâncio"></div>
+    <div class="modal-actions">
+      <button class="btn btn-sm" onclick="closeModal()">fechar</button>
+      <button class="btn btn-sm btn-accent" id="alBtn" onclick="addLocal()">adicionar</button>
+    </div>
+  </div>`);
+}
+async function addLocal(){
+  const name=document.getElementById('lName').value.trim();
+  if(!name){toast('Digite um nome',true);return;}
+  const btn=document.getElementById('alBtn');btn.disabled=true;btn.textContent='salvando...';
+  const{error}=await sb.from('locations').insert({id:'loc_'+Date.now(),name,sort_order:locations.length,is_loan:false,is_laundry:false});
+  if(error){toast('Erro: '+error.message,true);btn.disabled=false;btn.textContent='adicionar';return;}
+  await loadAll();renderLocaisModal();toast('Local adicionado!');
+}
+async function removeLocal(id){
+  const count=shirts.filter(s=>s.loc===id).length;
+  if(count>0){alert(`Este local tem ${count} camisa${count>1?'s':''}.\nMova as camisas antes de remover.`);return;}
+  if(!confirm('Remover?'))return;
+  await sb.from('locations').delete().eq('id',id);
+  await loadAll();renderLocaisModal();
+}
+async function toggleFlag(id,field,val){
+  const upd={};upd[field]=val;
+  await sb.from('locations').update(upd).eq('id',id);
+  await loadAll();renderLocaisModal();
+}
 
+// ── SETTINGS (admin) ──────────────────────────────────
+function openSettings(){
+  showModal(`<div class="modal">
+    <div class="modal-title">Configurações</div>
+    <div class="fg">
+      <label class="fl">Usos antes de lavar (global)</label>
+      <input class="fi" type="number" id="sMaxUses" value="${maxUses()}" min="1" max="50">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-sm" onclick="closeModal()">cancelar</button>
+      <button class="btn btn-sm btn-accent" id="ssBtn" onclick="saveSettings()">salvar</button>
+    </div>
+  </div>`);
+}
+async function saveSettings(){
+  const val=document.getElementById('sMaxUses').value;
+  const btn=document.getElementById('ssBtn');btn.disabled=true;btn.textContent='salvando...';
+  await sb.from('settings').upsert({key:'max_uses',value:val});
+  await loadAll();closeModal();toast('Configurações salvas!');
+}
+
+// ── PHOTO ─────────────────────────────────────────────
+function triggerPhoto(target,shirtId){pendingPhoto={target,shirtId};document.getElementById('fileInput').click();}
 function handleFile(e){
   const file=e.target.files[0];if(!file)return;
   const reader=new FileReader();
@@ -559,70 +757,104 @@ function handleFile(e){
   reader.readAsDataURL(file);e.target.value='';
 }
 
+// ── PDF ───────────────────────────────────────────────
+function gerarPDF(){
+  const max=maxUses();
+  const sorted=[...shirts].sort((a,b)=>{
+    const ua=usagesByShirt(a.id).length;
+    const ub=usagesByShirt(b.id).length;
+    return ub-ua;
+  });
+
+  const locStats=locations.map(l=>({
+    name:l.name,count:shirts.filter(s=>s.loc===l.id).length
+  }));
+  const totalUsos=usages.length;
+  const maisUsada=sorted[0];
+  const menosUsada=[...sorted].reverse()[0];
+
+  const rows=sorted.map((s,i)=>{
+    const o=ownerById(s.owner_id);
+    const u=usagesByShirt(s.id).length;
+    const pct=Math.min(100,Math.round(u/max*100));
+    const alert=u>=max?'⚠ lavar':'';
+    return`<tr style="border-bottom:1px solid #eee">
+      <td style="padding:6px 8px;font-size:12px;color:#555">#${s.codigo||'—'}</td>
+      <td style="padding:6px 8px;font-size:13px;font-weight:500">${s.time}</td>
+      <td style="padding:6px 8px;font-size:12px;color:#555">${s.liga}</td>
+      <td style="padding:6px 8px;font-size:12px">${s.tipo||'—'}</td>
+      <td style="padding:6px 8px;font-size:12px">${s.ano||'—'}</td>
+      <td style="padding:6px 8px;font-size:12px">${locLabel(s.loc)}</td>
+      <td style="padding:6px 8px;font-size:12px">${o.name}</td>
+      <td style="padding:6px 8px;font-size:12px;text-align:center">
+        <span style="font-weight:500;color:${u>=max?'#e24b4a':u>=max*.75?'#d97706':'#16a34a'}">${u}/${max}</span>
+        ${alert?`<br><span style="font-size:10px;color:#e24b4a">${alert}</span>`:''}
+      </td>
+    </tr>`;
+  }).join('');
+
+  const locRows=locStats.map(l=>`<tr style="border-bottom:1px solid #eee">
+    <td style="padding:6px 8px;font-size:13px">${l.name}</td>
+    <td style="padding:6px 8px;font-size:13px;font-weight:500">${l.count}</td>
+  </tr>`).join('');
+
+  const needWash=shirts.filter(s=>usagesByShirt(s.id).length>=max);
+  const washList=needWash.length
+    ?needWash.map(s=>`<span style="display:inline-block;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;border-radius:4px;padding:2px 8px;font-size:12px;margin:3px">#${s.codigo} ${s.time}</span>`).join('')
+    :'<span style="color:#16a34a;font-size:13px">Nenhuma camisa precisa lavar agora ✓</span>';
+
+  const today=new Date().toLocaleDateString('pt-BR');
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Relatório Camisas — ${today}</title>
+    <style>
+      body{font-family:'Helvetica Neue',Arial,sans-serif;color:#111;padding:2rem;max-width:900px;margin:0 auto;}
+      h1{font-size:22px;font-weight:600;margin-bottom:4px;}
+      h2{font-size:15px;font-weight:600;margin:2rem 0 .75rem;color:#333;border-bottom:2px solid #e5e7eb;padding-bottom:6px;}
+      .meta{font-size:13px;color:#888;margin-bottom:2rem;}
+      .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:2rem;}
+      .kpi{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px;}
+      .kpi-label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+      .kpi-val{font-size:22px;font-weight:300;}
+      table{width:100%;border-collapse:collapse;}
+      th{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em;padding:6px 8px;text-align:left;border-bottom:2px solid #e5e7eb;font-weight:400;}
+      @media print{button{display:none}}
+    </style>
+  </head><body>
+    <button onclick="window.print()" style="float:right;padding:8px 16px;background:#000;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px">Imprimir / Salvar PDF</button>
+    <h1>Relatório de Camisas</h1>
+    <div class="meta">Gerado em ${today} · ${shirts.length} camisas · limite de ${max} usos antes de lavar</div>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-label">Total</div><div class="kpi-val">${shirts.length}</div></div>
+      <div class="kpi"><div class="kpi-label">Total de usos</div><div class="kpi-val">${totalUsos}</div></div>
+      <div class="kpi"><div class="kpi-label">Precisam lavar</div><div class="kpi-val" style="color:${needWash.length>0?'#e24b4a':'#16a34a'}">${needWash.length}</div></div>
+      <div class="kpi"><div class="kpi-label">Origens</div><div class="kpi-val">${owners.length}</div></div>
+    </div>
+
+    <h2>⚠ Precisam lavar</h2>
+    <div style="margin-bottom:1rem">${washList}</div>
+
+    <h2>Por local</h2>
+    <table><thead><tr><th>Local</th><th>Camisas</th></tr></thead><tbody>${locRows}</tbody></table>
+
+    <h2>Todas as camisas (por uso)</h2>
+    <table>
+      <thead><tr><th>#</th><th>Time</th><th>Liga</th><th>Tipo</th><th>Ano</th><th>Local</th><th>Origem</th><th>Usos</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </body></html>`);
+  win.document.close();
+}
+
+// ── MODAL ─────────────────────────────────────────────
 function showModal(html){
   document.getElementById('modalRoot').innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()">${html}</div>`;
 }
 function closeModal(){document.getElementById('modalRoot').innerHTML='';}
 
-// ── LOCAIS ─────────────────────────────────────────────
-function openLocais(){renderLocaisModal();}
-
-function renderLocaisModal(){
-  const tags=locations.map(l=>{
-    const count=shirts.filter(s=>s.loc===l.id).length;
-    const loanCheck=`<input type="checkbox" title="Marcar como local de empréstimo" ${l.is_loan?'checked':''} onchange="toggleLoan('${l.id}',this.checked)" style="cursor:pointer;accent-color:var(--accent);">`;
-    return`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <div class="loc-badge" style="${locStyle(l.id)}">${l.name}</div>
-        <span style="font-size:11px;color:var(--text-dim)">${count} camisa${count!==1?'s':''}</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span title="É local de empréstimo?" style="font-size:11px;color:var(--text-dim);display:flex;align-items:center;gap:4px;">${loanCheck}empréstimo</span>
-        <button class="otrm" onclick="removeLocal('${l.id}')">✕</button>
-      </div>
-    </div>`;
-  }).join('');
-  showModal(`<div class="modal">
-    <div class="modal-title">Locais</div>
-    <div style="margin-bottom:1rem">${tags||'<div style="font-size:13px;color:var(--text-dim)">Nenhum local.</div>'}</div>
-    <div class="divider"></div>
-    <div style="font-size:11px;color:var(--text-dim);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem">Adicionar local</div>
-    <div class="fg"><label class="fl">Nome</label><input class="fi" type="text" id="lName" placeholder="Ex: Venancio, Estudio 2..."></div>
-    <div class="modal-actions">
-      <button class="btn btn-sm" onclick="closeModal()">fechar</button>
-      <button class="btn btn-sm btn-accent" id="alBtn" onclick="addLocal()">adicionar</button>
-    </div>
-  </div>`);
-}
-
-async function addLocal(){
-  const name=document.getElementById('lName').value.trim();
-  if(!name){toast('Digite um nome',true);return;}
-  const btn=document.getElementById('alBtn');btn.disabled=true;btn.textContent='salvando...';
-  const id='loc_'+Date.now();
-  const sort_order=locations.length;
-  const{error}=await sb.from('locations').insert({id,name,sort_order,is_loan:false});
-  if(error){toast('Erro: '+error.message,true);btn.disabled=false;btn.textContent='adicionar';return;}
-  await loadAll();renderLocaisModal();toast('Local adicionado!');
-}
-
-async function removeLocal(id){
-  const count=shirts.filter(s=>s.loc===id).length;
-  if(count>0){
-    alert(`Este local tem ${count} camisa${count>1?'s':''} vinculada${count>1?'s':''}.\nMova as camisas antes de remover.`);
-    return;
-  }
-  if(!confirm('Remover este local?'))return;
-  const{error}=await sb.from('locations').delete().eq('id',id);
-  if(error){toast('Erro: '+error.message,true);return;}
-  await loadAll();renderLocaisModal();toast('Local removido!');
-}
-
-async function toggleLoan(id,val){
-  await sb.from('locations').update({is_loan:val}).eq('id',id);
-  await loadAll();renderLocaisModal();
-}
-
+// ── INIT ──────────────────────────────────────────────
+document.getElementById('brandTitle').addEventListener('click',handleTitleClick);
 loadAll();
 </script>
 </body>
