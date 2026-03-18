@@ -147,6 +147,7 @@ select.flt{padding:8px 12px;background:var(--surface);border:1px solid var(--bor
     </div>
     <div class="header-actions">
       <button class="btn btn-sm" onclick="openPeople()">Origens</button>
+      <button class="btn btn-sm" onclick="openLocais()">Locais</button>
       <button class="btn btn-accent" onclick="openAdd()">+ Adicionar</button>
     </div>
   </div>
@@ -156,7 +157,6 @@ select.flt{padding:8px 12px;background:var(--surface);border:1px solid var(--bor
     <input class="search" id="search" type="text" placeholder="Buscar time, liga..." oninput="render()">
     <select class="flt" id="filterLoc" onchange="render()">
       <option value="">Todos os locais</option>
-      <option>Casa</option><option>Estudio</option><option>Lavanderia</option><option>Emprestimo</option>
     </select>
     <select class="flt" id="filterLiga" onchange="render()">
       <option value="">Todas as ligas</option>
@@ -175,9 +175,17 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const sb=supabase.createClient(SB_URL,SB_KEY);
 
 const COLORS=['#378ADD','#4fcca0','#e87a55','#d4537e','#e8a84a','#a78bfa','#86efac','#f87171','#888780'];
-const LOC_LABEL={Casa:'Casa',Estudio:'Estúdio',Lavanderia:'Lavanderia',Emprestimo:'Empréstimo'};
+const LOC_COLORS=['rgba(29,158,117,.15)','rgba(55,138,221,.15)','rgba(186,117,23,.15)','rgba(216,90,48,.15)','rgba(163,123,251,.15)','rgba(212,83,126,.15)'];
+const LOC_TEXT=['#4fcca0','#60aae8','#e8a84a','#e87a55','#a78bfa','#d4537e'];
 
-let owners=[],shirts=[],reservations=[],activeOwner='',pendingPhoto=null,selColor=COLORS[0],addPhoto=null;
+let owners=[],shirts=[],reservations=[],locations=[],activeOwner='',pendingPhoto=null,selColor=COLORS[0],addPhoto=null;
+
+function locLabel(id){const l=locations.find(x=>x.id===id);return l?l.name:id;}
+function locStyle(id){
+  const idx=locations.findIndex(x=>x.id===id);
+  const i=idx>=0?idx%LOC_COLORS.length:0;
+  return`background:${LOC_COLORS[i]};color:${LOC_TEXT[i]};`;
+}
 
 function toast(msg,err=false){
   const el=document.getElementById('toast');
@@ -190,12 +198,13 @@ function fmt(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}/${m}`;}
 function resByShirt(id){return reservations.filter(r=>r.shirt_id===id);}
 
 async function loadAll(){
-  const[{data:ow},{data:sh},{data:re}]=await Promise.all([
+  const[{data:ow},{data:sh},{data:re},{data:lo}]=await Promise.all([
     sb.from('owners').select('*').order('name'),
     sb.from('shirts').select('*').order('time'),
     sb.from('reservations').select('*').order('data'),
+    sb.from('locations').select('*').order('sort_order'),
   ]);
-  owners=ow||[]; shirts=sh||[]; reservations=re||[];
+  owners=ow||[]; shirts=sh||[]; reservations=re||[]; locations=lo||[];
   document.getElementById('ls').style.display='none';
   document.getElementById('app').style.display='block';
   render();
@@ -230,9 +239,9 @@ function getFiltered(){
 
 function renderStats(){
   const src=activeOwner?shirts.filter(s=>s.owner_id===activeOwner):shirts;
-  document.getElementById('stats').innerHTML=['Casa','Estudio','Lavanderia','Emprestimo'].map(l=>
-    `<div class="stat"><div class="stat-label">${LOC_LABEL[l]}</div>
-     <div class="stat-num">${src.filter(s=>s.loc===l).length} <span>camisas</span></div></div>`
+  document.getElementById('stats').innerHTML=locations.map(l=>
+    `<div class="stat"><div class="stat-label">${l.name}</div>
+     <div class="stat-num">${src.filter(s=>s.loc===l.id).length} <span>camisas</span></div></div>`
   ).join('');
 }
 
@@ -241,6 +250,9 @@ function updateFilters(){
   const sel=document.getElementById('filterLiga'),cur=sel.value;
   sel.innerHTML='<option value="">Todas as ligas</option>'+
     ligas.map(l=>`<option value="${l}"${l===cur?' selected':''}>${l}</option>`).join('');
+  const locSel=document.getElementById('filterLoc'),curLoc=locSel.value;
+  locSel.innerHTML='<option value="">Todos os locais</option>'+
+    locations.map(l=>`<option value="${l.id}"${l.id===curLoc?' selected':''}>${l.name}</option>`).join('');
 }
 
 function render(){
@@ -259,7 +271,8 @@ function render(){
       const lr=res.length?res[res.length-1]:null;
       const img=s.foto?`<img class="card-img" src="${s.foto}" alt="${s.time}">`:`<div class="card-ph">👕</div>`;
       const rb=lr?`<div class="card-res">⏺ ${lr.nome} · ${fmt(lr.data)}</div>`:'';
-      const ab=s.loc==='Emprestimo'
+      const empLoc=locations.find(l=>l.is_loan);
+      const ab=empLoc&&s.loc===empLoc.id
         ?`<button class="res-btn taken">emprestada</button>`
         :lr?`<button class="res-btn taken">reservada</button>`
         :`<button class="res-btn" onclick="event.stopPropagation();openReserva(${s.id})">reservar</button>`;
@@ -267,7 +280,7 @@ function render(){
         ${img}
         <div class="card-body">
           <div class="card-top">
-            <div class="loc-badge loc-${s.loc}">${LOC_LABEL[s.loc]}</div>
+            <div class="loc-badge" style="${locStyle(s.loc)}">${locLabel(s.loc)}</div>
             <div class="owner-ind"><span class="odot" style="background:${o.color}"></span>${o.name}</div>
           </div>
           <div class="card-num">Nº ${s.num} · ${s.ano}</div>
@@ -296,7 +309,7 @@ function openDetail(id){
     <div class="modal-title">${s.time} · Nº ${s.num}</div>
     <div style="cursor:pointer;margin-bottom:1rem" onclick="triggerPhoto('detail',${id})">${img}</div>
     <div class="fg"><label class="fl">Local</label>
-      <select class="fi" id="dLoc">${['Casa','Estudio','Lavanderia','Emprestimo'].map(l=>`<option value="${l}"${l===s.loc?' selected':''}>${LOC_LABEL[l]}</option>`).join('')}</select>
+      <select class="fi" id="dLoc">${locations.map(l=>`<option value="${l.id}"${l.id===s.loc?' selected':''}>${l.name}</option>`).join('')}</select>
     </div>
     <div class="fg"><label class="fl">Origem</label><select class="fi" id="dOwner">${oo}</select></div>
     <div class="fg"><label class="fl">Liga · Temporada</label>
@@ -370,8 +383,7 @@ function openAdd(){
     <div class="fg"><label class="fl">Temporada</label><input class="fi" type="text" id="aAno" placeholder="Ex: 2024"></div>
     <div class="fg"><label class="fl">Local</label>
       <select class="fi" id="aLoc">
-        <option value="Casa">Casa</option><option value="Estudio">Estúdio</option>
-        <option value="Lavanderia">Lavanderia</option><option value="Emprestimo">Empréstimo</option>
+        ${locations.map(l=>`<option value="${l.id}">${l.name}</option>`).join("")}
       </select>
     </div>
     <div class="modal-actions">
@@ -473,6 +485,65 @@ function showModal(html){
   document.getElementById('modalRoot').innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()">${html}</div>`;
 }
 function closeModal(){document.getElementById('modalRoot').innerHTML='';}
+
+// ── LOCAIS ─────────────────────────────────────────────
+function openLocais(){renderLocaisModal();}
+
+function renderLocaisModal(){
+  const tags=locations.map(l=>{
+    const count=shirts.filter(s=>s.loc===l.id).length;
+    const loanCheck=`<input type="checkbox" title="Marcar como local de empréstimo" ${l.is_loan?'checked':''} onchange="toggleLoan('${l.id}',this.checked)" style="cursor:pointer;accent-color:var(--accent);">`;
+    return`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="loc-badge" style="${locStyle(l.id)}">${l.name}</div>
+        <span style="font-size:11px;color:var(--text-dim)">${count} camisa${count!==1?'s':''}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span title="É local de empréstimo?" style="font-size:11px;color:var(--text-dim);display:flex;align-items:center;gap:4px;">${loanCheck}empréstimo</span>
+        <button class="otrm" onclick="removeLocal('${l.id}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+  showModal(`<div class="modal">
+    <div class="modal-title">Locais</div>
+    <div style="margin-bottom:1rem">${tags||'<div style="font-size:13px;color:var(--text-dim)">Nenhum local.</div>'}</div>
+    <div class="divider"></div>
+    <div style="font-size:11px;color:var(--text-dim);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem">Adicionar local</div>
+    <div class="fg"><label class="fl">Nome</label><input class="fi" type="text" id="lName" placeholder="Ex: Venancio, Estudio 2..."></div>
+    <div class="modal-actions">
+      <button class="btn btn-sm" onclick="closeModal()">fechar</button>
+      <button class="btn btn-sm btn-accent" id="alBtn" onclick="addLocal()">adicionar</button>
+    </div>
+  </div>`);
+}
+
+async function addLocal(){
+  const name=document.getElementById('lName').value.trim();
+  if(!name){toast('Digite um nome',true);return;}
+  const btn=document.getElementById('alBtn');btn.disabled=true;btn.textContent='salvando...';
+  const id='loc_'+Date.now();
+  const sort_order=locations.length;
+  const{error}=await sb.from('locations').insert({id,name,sort_order,is_loan:false});
+  if(error){toast('Erro: '+error.message,true);btn.disabled=false;btn.textContent='adicionar';return;}
+  await loadAll();renderLocaisModal();toast('Local adicionado!');
+}
+
+async function removeLocal(id){
+  const count=shirts.filter(s=>s.loc===id).length;
+  if(count>0){
+    alert(`Este local tem ${count} camisa${count>1?'s':''} vinculada${count>1?'s':''}.\nMova as camisas antes de remover.`);
+    return;
+  }
+  if(!confirm('Remover este local?'))return;
+  const{error}=await sb.from('locations').delete().eq('id',id);
+  if(error){toast('Erro: '+error.message,true);return;}
+  await loadAll();renderLocaisModal();toast('Local removido!');
+}
+
+async function toggleLoan(id,val){
+  await sb.from('locations').update({is_loan:val}).eq('id',id);
+  await loadAll();renderLocaisModal();
+}
 
 loadAll();
 </script>
